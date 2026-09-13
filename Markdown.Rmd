@@ -1,0 +1,747 @@
+---
+title: "Replicating and reviewing the observantional design in Participatory Censorship in Authoritarian Regimes by Tony Yang"
+author: "Carmen Wu"
+date: "2026-09-04"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Folder Contents
+
+- `README.txt`: The authors' original README.
+
+- `Study1.csv`: The authors' cleaned survey data for experiment 1, only relevant files kept.
+
+- `01_Main_Manuscript.R`: The authors' R script.
+- `02_Online_Appendix.R`: The author's R script for the appendix.
+
+- `Markdown.Rmd`: This Markdown file here.
+- `Markdown.html`: HTML knitted from this file.
+
+
+## Packages
+
+```{r packages, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+library(tidyr)
+library(dplyr)
+library(psych)
+library(car)
+library(lmtest)
+library(broom)
+library(sensemakr)
+library(estimatr)
+library(sandwich)
+library(mediation)
+library(ggplot2)
+library(stargazer)
+
+```
+
+
+## Setup
+
+```{r create copy, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+study1 <- read.csv("Study1.csv")
+study1_mine <- study1
+
+```
+
+
+## The Study
+
+Tony Zirui Yang, 2024
+**"Participatory Censorship in Authoritarian Regimes"**.
+
+From the Comparative Political Studies (CPS) journal, Harvard Dataverse.
+
+Access the original paper:
+https://journals.sagepub.com/doi/abs/10.1177/00104140241302762#core-collateral-purchase-access
+DOI: 10.1177/00104140241302762
+
+Access the replication package:
+https://doi.org/10.7910/DVN/P8YWA4
+
+
+## The Argument
+
+In this study the author seeks to investigate the prevalence of public participation in the censorship process in determining levels of popular support for the censorship apparatus in authoritarian regimes. 
+
+By adopting a broader conceptualisation of censorship that focuses on the symbiotic relationship between the government and ordinary citizens, the author uses a 'bottom-up' perspective to highlight the role of public participation in shaping the unique Chinese censorship dynamic (and consequentially, in yielding high levels of support for its repressive apparatus). 
+
+The author contends that ordinary users who frequently participate in the process by reporting and flagging political and no-political online content they disapprove of are likely to have higher levels of support for state censorship - found in existing surveys.
+
+Main Hypothesis: The active participation in censorship is positively associated with levels of support for the censorship apparatus under authoritarian regimes.
+
+
+## The Measurement
+
+We will focus on experiment 1, an observational design where 1124 participants were selected for an online survey using a quota sampling strategy. The measurement is summarised below:
+
+TO MEASURE PARTICIPATION (predictor **Participation**, Five-point Likert scale), 
+participants were asked to rate their frequency of online censorship participation on a scale of 1-5, 1 being *'never'* and 5 being *'multiple times a month'*. 
+(Political and non-political participation variables used for Table II are not the focus of this project).
+
+TO MEASURE SUPPORT FOR CENSORSHIP (main outcome variable **Censor_Support** [1], Five-point Likert Scale), 
+participants were asked to what extent they agreed with the statement *"The government should actively control the Internet and remove content that it deems inappropriate"*. 
+
+Support for censorship of political content (**Censor_Pol_Support** [2]) and non-political content (**Censor_Ent_Support** [3]) are measured by asking participants who report having previously participated to select the content type they have reported or flagged, options ranging from political news and commentary to general entertainment and inappropriate content.
+
+TO MEASURE PERCEIVED GOVERNMENT RESPONSIBILITY FOR CENSORSHIP (mediator **Responsibility_Gov**, 11-point Scale), 
+participants were asked to rate the extent to which they believe censorship is the responsibility of the government.
+
+
+COVARIATES ADJUSTED BY SAMPLE WEIGHTS:
+
+- Demographic covariates: 
+Gender (**Female**), 0/1
+Age (**Age_Group**), 5 levels
+Education (**Education**), 5 levels
+Rural/urban location (**Urban**), 0/1
+
+- Predisposition covariates: 
+Party membership (**Party_Member**), 0/1
+Political ideology (**Pol_Ideology**), Five-point Likert Scale
+Economic ideology (**Econ_Ideology**), Five-point Likert Scale
+Political interest (**Pol_Interest**), Six-point Scale
+
+(The survey sample was weighted to resemble the internet population in terms of gender, age, education, rural/urban location and region, as shown in the appendix).
+
+
+
+## Key Findings
+
+
+[1]**Censor_Support** controlling for demographic covariates only.
+Participation *B* = **0.099** - **Significant**, Adjusted R^2 = 0.048
+
+[1]**Censor_Support** controlling for both demographic and predisposition covariates.
+Participation *B* = **0.084** - **Significant**, Adjusted R^2 = 0.106
+
+"Specifically, for each additional level of participation in censorship, there is a 0.084 increase in support for censorship on a five-point scale (8.34% of a standard deviation of the dependent variable) after controlling for demographic and predisposition covariates."
+
+The author noted that "such behavior is **especially common among younger generations** who are regularly exposed to online discussions about the use of reporting as a strategy to censor opposing opinions", and that "younger and **better-educated** respondents were more likely to participate in political censorship, regardless of their political predisposition".
+
+//
+
+[2]**Censor_Pol_Support** controlling for demographic covariates only.
+Participation *B* = **0.085** - **Significant**, Adjusted R^2 = 0.046
+
+[2]**Censor_Pol_Support** controlling for both demographic and predisposition covariates.
+Participation *B* = **0.105** - **Significant**, Adjusted R^2 = 0.074
+
+/
+
+[3]**Censor_Ent_Support** controlling for demographic covariates only.
+Participation *B* = **0.007** - **Not Significant**, Adjusted R^2 = 0.034
+
+[3]**Censor_Ent_Support** controlling for both demographic and predisposition covariates.
+Participation *B* = **0.027** - **Not Significant**, Adjusted R^2 = 0.070
+
+//
+
+**Responsibility_Gov** 
+Participation *B* = **-0.112**, p = 0.023 - **Significant**
+"Causal mediation analysis demonstrates that perceived government responsibility has a significant and negative causal mediation effect on the relationship between participation and support for censorship."
+
+
+## OLS Regressions
+
+Support model, demographic covariates only:
+```{r support 1, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols1 <- lm(Censor_Support ~ Participation + Female + Age_Group + Education + Urban, data = study1_mine, weights = calibWeight)
+summary(ols1)
+
+```
+
+*B* = **0.09878**, p = 0.000442 - **Significant**
+
+Adjusted R^2 = 0.04821 
+
+Each additional level of **participation in censorship** is associated with a 0.099 increase in **support for censorship** in the scale, controlling for **demographic** covariates. This matches their findings (0.099, 0.048).
+
+
+/
+
+Main support model:
+```{r support 2, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols2 <- lm(Censor_Support ~ Participation + Female + Age_Group + Education + Urban + Party_Member  + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight)
+summary(ols2)
+
+```
+
+Participation *B* = **0.083838**, p = 0.002794 - **Significant**
+
+Adjusted R^2 = 0.106
+
+Each additional level of **participation in censorship** is associated with a 0.084 increase in **support for censorship** in the scale, controlling for **demographic** and **predisposition** covariates. This matches their findings (0.084, 0.106).
+**Econ_Ideology** stands out as the strongest covariate (*B* = **0.202280**, *p* = 4.47e-11 - **Highly significant**).
+
+//
+
+Support for political censorship model, demographic covariates only:
+```{r pol support 1, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols_pol1 <- lm(Censor_Pol_Support ~ Participation + Female + Age_Group + Education + Urban, data = study1_mine, weights = calibWeight)
+summary(ols_pol1)
+
+```
+
+*B* = **0.08491**, p = 0.00412 - **Significant**
+
+Adjusted R^2 = 0.04608
+
+Each additional level of **participation in censorship** is associated with a 0.085 increase in **support for political censorship** in the scale, controlling for **demographic** covariates. This matches their findings (0.085, 0.046).
+
+/
+
+Support for political censorship model, demographic and predisposition covariates:
+```{r pol support 2, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols_pol2 <- lm(Censor_Pol_Support ~ Participation + Female + Age_Group + Education + Urban + Party_Member + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight)
+summary(ols_pol2)
+
+```
+
+*B* = **0.104963**, p = 0.000429 - **Significant**
+
+Adjusted R^2 = 0.07398
+
+Each additional level of **participation in censorship** is associated with a 0.105 increase in **support for political censorship** in the scale, controlling for **demographic** and **predisposition** covariates. This matches their findings (0.105, 0.074).
+
+//
+
+Support for non-political censorship model, demographic covariates only:
+```{r ent support 1, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols_ent1 <- lm(Censor_Ent_Support ~ Participation + Female + Age_Group + Education + Urban, data = study1_mine, weights = calibWeight)
+summary(ols_ent1)
+
+```
+
+*B* = 0.006733, p = 0.836411 - Not significant
+
+Adjusted R^2 = 0.03352
+
+Each additional level of **participation in censorship** is associated with a 0.007 increase in **support for non-political censorship** in the scale, controlling for **demographic** covariates. This matches their findings (0.007, 0.034).
+
+/
+
+Support for non-political censorship model, demographic and predisposition covariates:
+```{r ent support 2, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols_ent2 <- lm(Censor_Ent_Support ~ Participation + Female + Age_Group + Education + Urban + Party_Member  + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight)
+summary(ols_ent2)
+
+```
+
+*B* = 2.667e-02, p = 0.417332 - Not significant
+
+Adjusted R^2 = 0.06984
+
+Each additional level of **participation in censorship** is associated with a 0.027 increase in **support for non-political censorship** in the scale, controlling for **demographic** and **predisposition** covariates. This matches their findings (0.027, 0.070).
+
+//
+
+The author noted that the observational analyses above are "susceptible to the possibility of omitted variable bias or reverse causality" given the small coefficient (*B* = 0.084), so we will follow in the author's exact footsteps and conduct sensitivity analysis on the main model as a primary robustness check - against an unobserved confounding variable "as strong as the most significant observed covariate" **Econ_Ideology** (*B* = 0.202, *p* = 4.47e-11). 
+I cannot help but notice that the author's script set the kD argument to 1:3, which means they also tested the results against unobserved confounding variables 2x and 3x stronger than the selected covariate. I will do the same:
+
+```{r sensitivity test, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+sensitivity <- sensemakr(model = ols2, treatment = "Participation", benchmark_covariates = "Econ_Ideology", kd = 1:3)
+
+summary(sensitivity)
+
+```
+
+1. R^2 [yz.dx] = 0.0421
+An unobserved confounding variable as strong as the benchmark covariate **Econ_Ideology** explains *4.21%* of the variance in **Censor_Support** after controlling for **Participation** and the observed covariates.
+
+2. R^2 [yz.dx] = 0.0843
+An unobserved confounding variable 2x as strong as the benchmark covariate **Econ_Ideology** explains *8.43%* of the variance in **Censor_Support** after controlling for **Participation** and the observed covariates.
+
+3. R^2 [yz.dx] = 0.1264
+An unobserved confounding variable 3x as strong as the benchmark covariate **Econ_Ideology** explains *12.64%* of the variance in **Censor_Support** after controlling for **Participation** and the observed covariates.
+
+-
+
+1. Partial R^2 [dz.x] = 0.0045
+An unobserved confounding variable as strong as the benchmark covariate **Econ_Ideology** explains *0.45%* of the variance in **Participation** after controlling for the observed covariates.
+
+2. Partial R^2 [dz.x] = 0.0089
+An unobserved confounding variable *2x* as strong as the benchmark covariate **Econ_Ideology** explains *0.89%* of the variance in **Participation** after controlling for the observed covariates.
+
+3. Partial R^2 [dz.x] = 0.0134
+An unobserved confounding variable *3x* as strong as the benchmark covariate **Econ_Ideology** explains *1.34%* of the variance in **Participation** after controlling for the observed covariates.
+
+-
+
+Crucially...
+
+Partial R^2 [yd.x] = 0.0084
+**Participation** explains ***0.84%*** of the variance in **Censor_Support** after controlling for the observed covariates.
+
+**RV** (for q = 1) = **0.0879**
+The minimum strength (residual variance explained) needed for an unobserved confounding variable to wipe out the observed effect is ***8.79%*** the strength of **Econ_Ideology**, which is not *ideal* (<10%) but also not remarkably fragile. Consist with the author's statement, their findings are not overly sensitive to omitted confounders as strong as their most significant covariate. 
+
+**RV** (for q = 1, alpha = 0.05) = **0.0312** 
+An unobserved confounding variable would need *3.12%* of the strength of **Econ_Ideology** for the adjusted confidence interval to include zero. 
+Omitted confounders 3x as strong, however, will absolutely wipe out the effect of **Participation** (adjusted CI lower bound falls under zero to *-0.0056*). Though not explicitly mentioned in the paper, the author did not obscure the fact that their results will fail under a much-more-demanding hypothetical confounding scenario, and overall the sensitivity analysis confirms that their results are robust to unobserved confounders to the exact degree that was reported. 
+
+Finally I will use a table to collectively report these findings as the author originally did:
+```{r sensitivity table, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE, results='asis'}
+
+ovb_minimal_reporting(sensitivity, format = "html")
+
+```
+
+
+
+## Diagnosing the Full Model
+
+# Multicollinearity check
+
+```{r multicolin, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+study1_mine %>%
+  dplyr::select(Participation, Female, Age_Group, Education, Urban, Party_Member, Pol_Ideology, Econ_Ideology, Pol_Interest) %>%
+  na.omit() %>%
+  cor()
+
+```
+
+Although I suspected that some of the predisposition variables may be theoretically linked, no highly correlated variables are found upon inspection. 
+
+```{r vif, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+vif(ols2)
+
+```
+
+No variance inflation factors >5, tolerance far exceeds 0.1 for an n>1000 sample. The inclusion of the variables under inspection do not inflate variance of our estimated coefficients by significant amounts.
+
+
+# Linearity check
+  
+```{r scatter, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+rows_used <- as.numeric(rownames(ols2$model))
+study1_mine_fix <- study1_mine[rows_used, ] # Fixing the mismatch
+
+study1_mine_fix$fit.r <- ols2$residuals
+study1_mine_fix$fit.p <- ols2$fitted.values
+fit.r <- study1_mine_fix$fit.r
+fit.p <- study1_mine_fix$fit.p
+
+ggplot(study1_mine_fix, aes(fit.p, y = fit.r)) + geom_point(shape = 1) + geom_hline(yintercept = 0) + geom_smooth(method = "loess", color = "dodgerblue")
+
+```
+
+Due to the predictors being a mix of ordinal and binary variables, the residuals are expected to fall into the diagonal bands presented in the visualisation above. The tails of the loess line are slightly curved downwards over low and high ranges of predicted support, which may be pointing to systematic overestimation at the extremes nonetheless (or something the linear model is failing to pick up). Considering the expected behavior due to ordinal and binary predictors described just now, however, I will double-check the coefficients of 2nd and 3rd powers to our predictors using a Ramsey's RESET test before concluding non-linearity.
+
+
+```{r reset, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+resettest(ols2, power = 2:3, type = "regressor")
+
+```
+
+Indeed, we have no statistical evidence of linearity related specification error (RESET p = 0.106) in this model, power transformations in this case are redundant as the difference in R^2s would be statistically insignificant. The downward curves were likely the result of the loess smoother being slightly 'pulled about' in trying to take local averages over discrete data with gaps (**Censor_Support**, Five-point Likert Scale), loess being very sensitive to local residual distributions unlike RESET - notably at the extremes where data is sparse, in our case. Simultaneously RESET is robust to floor and ceiling effects of residuals being capped at each ends due to support having a 1-5 limit. So considering all the above, I declare that the model passed our linearity test.
+
+
+# Normality check
+
+```{r density, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ggplot(study1_mine_fix, aes(fit.r)) + geom_density() + stat_function(fun = dnorm, args = list(mean = mean(fit.r), sd = sd(fit.r)), color = "red")
+
+```
+
+The distribution appears bimodal with two peaks at -0.25 and 0.75 where the most residuals seem to be clustering at, however I simply cannot expect the residual distribution shape to resemble a bell curve given that the variables are all discrete. For the same reason I will skip a Shapiro-Wilk test (where the W stat is guaranteed to be highly significant given the large sample size). 
+
+
+```{r qq, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ggplot(study1_mine_fix, aes(sample = fit.r)) + stat_qq(shape = 1) + stat_qq_line(size = 1.5, alpha = 5)
+
+```
+
+The data points droop below the normal quantile-quantile line producing the large tails at either end. despite obvious high peak in the density curve (no *single* high peak for that fact), the distinct S shape here shows that the distribution of residuals is leptokurtic. Although this is clearly indicative of a normality violation, this error does not bias the estimated coefficients; Before introducing robust estimators however I will check constant variance.
+
+
+# Constant Variance check
+
+```{r spreadlevel, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE, fig.width=7, fig.height=5}
+
+spreadLevelPlot(ols2)
+
+```
+Based on my ocular inspection, the bimodal distribution presented in the previous density curve is showing up here: There appears to be a large funnel shape at 3 (respondents who are neutral about censorship) and a second smaller cluster at 4 - where absolute studentised residuals dip below 0.002 and 0.011 respectively. The variation in residuals is not even across predicted support values, which is *statistically* a homoscedasticity violation. However, this does not fundamentally invalidate the author's model specification due to none of the variables being continuous, as mentioned; Like the parallel diagonal bands and double-peaks, the double-funnels are an inevitable product of regressing an ordinal outcome on ordinal/binary predictors. Moreover the trend-lines are largely flat, which is a sign that their model is not systematically losing precision over predicted support values due to a severe ncv pattern, the size of residuals is largely constant across predicted support values *on average*.
+
+```{r BP, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ncvTest(ols2)
+
+```
+
+The Breusch-Pagan test result confirms my point, there is no statistical evidence of a relationship between fitted values and residual variance (p = 0.30388); A small Chi-squared (1.057 for df=1) indicates a small 'distance' between the expected constant variance and the actual residual variance. To address all the problems identified above, however, I will introduce type 3 heteroscedasticity-consistent standard errors and report:
+
+
+```{r coeftest robust SEs, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+vcov <- vcovHC(ols2, type = "HC3") # Using coeftest for stargazer first
+ols2_robust <- coeftest(ols2, vcov. = vcov)
+
+stargazer(ols2, ols2_robust, type = "text", digits = 4, align = TRUE, title = "reporting new p-values", column.labels = c("original model", "robust SEs"))
+
+```
+
+```{r lm robust SEs, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols2_robust2 <- lm_robust(Censor_Support ~ Participation + Female + Age_Group + Education + Urban + Party_Member  + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight, se_type = "HC3")
+
+summary(ols2_robust2)
+
+```
+
+**Participation**
+*SE* = 0.027978, *p* = 0.002794 - Significant
+*SE2* = **0.04670**, *p2* = **0.07291** - **Not significant**
+
+**Female**
+*SE* = 0.062890, *p* = 0.001696 - Significant
+*SE2* = **0.11214**, *p2* = **0.0788** - **Not significant**
+
+**Urban**
+*SE* = 0.067411, *p* = 0.000865 - Significant
+*SE2* = **0.11818**, *p2* = **0.0569** - **Not significant**
+
+Based on this summary, SEs have been **artificially small** under the constant variance assumption. New heteroscedasticity-consistent SEs are 2x the size of original SEs on average, and statistical significance is severely attenuated across all predictors. Critically, the CI for Participation now includes zero (-0.007800, 0.17548) indicating that we no longer have evidence of the association being statistically distinguishable from zero (p = 0.07).
+
+In the author's defense, they had no obligation to introduce robust estimators given that the model passed crucial tests (Breusch-Pagan p = 0.30388). All I can conclude from this is that the model is **extremely sensitive to standard error type**, and I speculate that the survey calibration weighting may be the reason why the model is being so severely penalised here. I will proceed to check leverage against the re-balanced weights:
+
+
+# Dfbetas check
+
+```{r dfbetas, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE, fig.width=7, fig.height=7}
+
+2/sqrt(1124)
+threshold <- 2/sqrt(1124)
+dfbetaPlots(ols2, id.n = 3)
+
+```
+
+Based on my ocular inspection, despite there being large positive and negative bdfetas sitting on the top and bottom of the Party_Member dfbeta-plot (scale -0.04 - 0.04), no scales truly exceed the recommended threshold, which tells me that the model is largely robust to the inclusion of all observations flagged in this plot.
+
+
+```{r ids & max, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+dfbetas <- dfbetas(ols2)
+dfbetas_ids <- which(apply(abs(dfbetas), 1, max) > threshold)
+names(dfbetas) <- rownames(study1_mine)
+dfbetas[abs(dfbetas) == max(abs(dfbetas))]
+
+```
+
+The largest dfbeta is directly located (ObsNo 950); had this case been omitted the estimated coefficient will change by more than half of a standard deviation (-0.68*). Given the size of our coefficient (0.084) relative to the size of this dfbeta, this is an observation with incredible leverage. I will double check the weight used for this specific case, as well as the overall distribution of weights:
+
+```{r weights, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+study1_mine[950, c("calibWeight", "Female", "Age_Group", "Education", "Urban", "Region", "Party_Member")]
+
+summary(study1_mine$calibWeight)
+
+describe(study1_mine$calibWeight)
+
+```
+
+A quick check of their calibration weights shows the expected weighting distribution *with a dramatic skew* (min=0.22, md=0.22, mean=0.89, max=3.56), no invalid weights, and top weights sitting exactly at the cutoff of winsorisation (4*0.89=3.56!!). 
+The skew (S=1.46) is created by the vast majority of observations being assigned small weights (0.22), due to these cases belonging to demographic groups over-sampled in the survey. 
+
+The weight for case 950 is is 2.96 (a 40-49 male party member with high school education living in the urban South etc., belonging to a relatively under-sampled demographic group in this case). Whilst case 950 has substantial *raw* leverage, the weighting should hinder its capacity to truly pull the coefficient about. I will re-run the model without large dfbetas and report:
+
+```{r no dfbetas, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+study1_nodfbetas <- study1_mine[-dfbetas_ids, ]
+
+ols2_nodfbetas <- lm(Censor_Support ~ Participation + Female + Age_Group + Education + Urban + Party_Member + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_nodfbetas, weights = calibWeight)
+
+summary(ols2_nodfbetas)
+
+```
+
+*B* = 0.085516 (from 0.0838), *p* = 0.006869 - Still significant
+Adjusted R^2 = 0.1154 
+
+Consistent with my point above, the coefficient changed only marginally after the flagged cases were removed, which only confirms that the author's post-strat is working. However, I will refrain from making this a firm conclusion about the weighted sample being  truly *representative* in terms of meeting the calibration targets (of the China internet census, stated in the Appendix) before checking outlier status, further locating influential observations, and replicating Table B1 in the descriptive statistics section.
+
+
+# Influential Observations check
+
+```{r influence, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE, fig.width=7, fig.height=7}
+
+influential <- influence.measures(ols2)
+influential_ids <- as.numeric(rownames(influencePlot(ols2)))
+
+```
+
+High leverage residuals located.
+
+The influence plot shows many large bubbles located to the extreme right (>0.016) stretching the scale to 7.5x the 2k/n threshold, the largest hat-value resting at 0.126* (ObsNo 994).
+
+The Cook's D scale does not exceed 0.101 (<|0.5|), however multiple large studentised residuals (>|3|) are flagged:
+
+- 5.522* (ObsNo 404)
+- 4.071* (ObsNo 494)
+- 4.902* (ObsNo 507)
+- 4.785* (ObsNo 1097)
+
+
+I will re-run the model without influential observations and report:
+```{r no influential, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+study1_noinfluential <- study1_mine[-influential_ids, ]
+ols2_noinfluential <- lm(Censor_Support ~ Participation + Female + Age_Group + Education + Urban + Party_Member  + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_noinfluential, weights = calibWeight)
+summary(ols2_noinfluential)
+
+```
+
+*B* = 0.079375 (from 0.0838), *p* = 0.00497 - Still significant
+
+Adjusted R^2 = 0.1077
+
+Once again, the estimated coefficient only dropped by a tiny margin while remaining significant, indicating that the model is robust to the inclusion of the influential observations flagged. To attest to the point that calibration weighting hindered their ability to influence our estimated coefficients, I will proceed to show that the sample distribution resembles the Chinese internet population after being post-stratified.
+
+/
+
+The calibration benchmarks taken from the China internet census are as follows:
+
+```{r calibration targets, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+# Gender: F = 47.3%, M = 52.7%
+b1.11 <- paste(c(0.473,0.527) * 100, "%", sep = "")
+
+# Location: Rural = 28.2%, Urban = 71.8%
+b1.12 <- paste(c(0.282,0.718) * 100, "%", sep = "")
+
+# Region: East = 31.1%, South&Central = 28.2%, North&Northeast = 22.2%, West = 18.5%
+b1.13 <- paste(c(0.311,0.282,0.222,0.185) * 100, "%", sep = "")
+
+# Age Group: <=19 = 21.6%, 20-29 = 26.8%, 30-39 = 23.5%, >=40 = 28.1%
+b1.14 <- paste(c(0.216,0.268,0.235,0.281) * 100, "%", sep = "")
+
+# Education: Below high school = 79.8%, Above college = 20.2%
+b1.15 <- paste(c(0.798,0.202) * 100, "%", sep = "")
+
+census <- c(b1.11,b1.12,b1.13,b1.14,b1.15)
+
+```
+
+Next, directly adapting the author's code from their descriptive statistics section for the weighted survey sample (echo is on):
+
+```{r weights check, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+# Gender
+b1.1 <- paste(round(rev(table(study1_mine$Female)/nrow(study1_mine)) * 100, 1), "%", sep = "")
+# Gender: weighted
+b1.2 <- paste(round(rev(sapply(names(table(study1_mine$Female)), function(value) {
+  weighted.mean(study1_mine$Female == value, w = study1_mine$calibWeight, na.rm = T)
+  })) * 100, 1), "%", sep = "")
+
+# Location
+b1.3 <- paste(round(table(study1_mine$Urban)/nrow(study1_mine) * 100, 1), "%", sep = "")
+# Location: weighted
+b1.4 <- paste(round(sapply(names(table(study1_mine$Urban)), function(value) {
+  weighted.mean(study1_mine$Urban == value, w = study1_mine$calibWeight, na.rm = T)
+}) * 100, 1), "%", sep = "")
+
+# Region
+# Combining South and Central; North and Northeast
+study1_mine$Region_recode <- ifelse(study1_mine$Region == 1, 1,
+                               ifelse(study1_mine$Region %in% c(2, 4), 2,
+                                      ifelse(study1_mine$Region %in% c(3, 5), 3,
+                                             ifelse(study1_mine$Region == 6, 4, NA))))
+b1.5 <- paste(round(table(study1_mine$Region_recode)/nrow(study1_mine) * 100, 1), "%", sep = "")
+# Region: weighted
+b1.6 <- paste(round(sapply(names(table(study1_mine$Region_recode)), function(value) {
+  weighted.mean(study1_mine$Region_recode == value, w = study1_mine$calibWeight, na.rm = T)
+}) * 100, 1), "%", sep = "")
+
+# Age Group
+# Combining age groups into 4 categories. A note from the future: This recoding step will be referenced later.
+study1_mine$Age_Group4 <- ifelse(study1_mine$Age_Group %in% c(4,5), 4, study1_mine$Age_Group) 
+b1.7 <- paste(round(table(study1_mine$Age_Group4)/nrow(study1_mine) * 100, 1), "%", sep = "")
+# Age Group: weighted
+b1.8 <- paste(round(sapply(names(table(study1_mine$Age_Group4)), function(value) {
+  weighted.mean(study1_mine$Age_Group4 == value, w = study1_mine$calibWeight, na.rm = T)
+}) * 100, 1), "%", sep = "")
+
+# Education
+# Combining Education into 2 categories
+study1_mine$Education2 <- ifelse(study1_mine$Education %in% c(1,2), 1, 2)
+b1.9 <- paste(round(table(study1_mine$Education2)/nrow(study1_mine) * 100, 1), "%", sep = "")
+# Education: weighted
+b1.10 <- paste(round(sapply(names(table(study1_mine$Education2)), function(value) {
+  weighted.mean(study1_mine$Education2 == value, w = study1_mine$calibWeight, na.rm = T)
+}) * 100, 1), "%", sep = "")
+
+sample   <- c(b1.1,b1.3,b1.5,b1.7,b1.9)
+weighted <- c(b1.2,b1.4,b1.6,b1.8,b1.10)
+
+```
+
+Replicating table B1 in the Appendix:
+
+```{r table B1, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE, fig.width=8, fig.height=5}
+
+table <- cbind(sample, weighted, census)
+
+colnames(table) <- c("[Original Survey Sample]", "[Weighted Survey Sample]", "[Benchmarks]")
+
+rownames(table) <- c("[Gender]: F", "[Gender]: M", "[Location]: Rural", "[Location]: Urban", "[Region]: East", "[Region]: South & Central", "[Region]: North & Northeast", "[Region]: West", "[Age]: <=19", "[Age]: 20-29", "[Age]: 30-39", "[Age]: >=40", "[Education]: <= High School", "[Education]: >= College")
+
+table
+
+```
+The sample distribution now meets the calibration targets of the Chinese internet census after weighting just as the author stated. Weights dilute the influence of high leverage observations had they been over-sampled (enough to lever the estimated coefficient), which explains why the model was robust to their inclusion. The author's choice post-stratification weighting is thereby fully justified.
+
+
+
+# Moderated model
+
+The author noted that public participation in censorship is particularly prevalent in younger generations multiple times, despite only controlling for age (**Age_Group**) as a covariate. As exploratory analysis and an additional robustness check, I will test for age moderation using the previously recoded age variable **Age_Group4** combining levels 4 and 5 (respondents age>=40), where the baseline will be level 1 (respondents age<=19):
+
+```{r interaction, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols2_interaction <- lm(Censor_Support ~ Participation * Age_Group4 + Female + Education + Urban + Party_Member  + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight)
+
+summary(ols2_interaction)
+
+```
+
+**Participation:Age_Group4** *B* = 0.070584 *p* = 0.016958 - Significant
+
+The interaction term is significant, participating the censorship process has greater effect on older respondents compared to younger ones; one level increase in age is associated with a 0.07 unit increase in the effect of censorship participation on predicted support. We leave possible explanations for this speculative pattern to the continued exploration of future researchers. 
+
+Considering the fact that the model is sensitive to the choice in SEs, introducing robust estimators to this moderated model also will likely increase SEs enough to overturn this significant result (p = 0.017). 
+
+
+```{r , include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols2_interaction_rob <- lm_robust(Censor_Support ~ Participation * Age_Group4 + Female + Education + Urban + Party_Member  + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight, se_type = "HC3")
+summary(ols2_interaction_rob)
+
+```
+
+**Participation:Age_Group4** *B* = 0.070584 *p* = 0.18 - Not significant
+
+In line with our expectations, standard errors increased (0.029-0.053) enough to kill the effect in this model too; with type 3 heteroscedasticity consistent standard errors we lose the significant result of our interaction term. 
+Whilst the positive association remains, we no longer have evidence that the association is not statistically zero (CI -0.0326, 0.17382).
+Up to this point, I have seen enough to gain a clear picture of how robust the main model is. A summarised diagnosis will be presented in the conclusion section. 
+
+
+## Mediation Effect
+
+Finally, the author conducted causal mediation analysis for experiment 1 to provide support for the responsibility diffusion theory - testing whether the perceived responsibility of the government in censorship (M = **Responsibility_Gov**) mediates the relationship between **Participation** and **Censor_Support**.
+I will follow the author's original methodology and regress **Responsibility_Gov** on **Participation** controlling for all demographic and predisposition covariates first, report the coefficient, subset, then build the mediator and outcome models separately (*path a* M ~ X, *path b* Y ~ X + M) dropping all covariates.
+
+Perceived government responsibility model, demographic and predisposition covariates:
+```{r gov res, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+ols_res <- lm(Responsibility_Gov ~ Participation + Female + Age_Group + Education + Urban + Party_Member + Pol_Ideology + Econ_Ideology + Pol_Interest, data = study1_mine, weights = calibWeight)
+
+summary(ols_res)
+
+```
+ 
+
+*B* = **-0.112181**, *p* = 0.02252 - **Significant**
+
+Adjusted R^2 = 0.01548
+
+Higher levels of **participation in censorship** are significantly and negatively associated with **perceived government responsibility** after controlling for **demographic** and **predisposition** covariates, which is consistent with the author's findings (-0.112, 0.023). 
+It is noteworthy that the fit is less than ideal (R^2 = 0.015), there is a substantial amount of variation in perceived government responsibility that the model is failing to explain (98.5%). However, it was made clear in the study that the author did not intend for this model to be predictive. 
+With the knowledge that:
+Both [1] the total effect (*c* X -> Y) of participation on support without perceived responsibility controlled and [2] the first component of the indirect effect (*a* X -> M) are significant, we may now proceed.
+Weights are retained.
+
+```{r mediation, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+mediation_subset <- study1_mine[, c("Participation", "Responsibility_Gov","Censor_Support","calibWeight")] %>% na.omit()
+
+ols_a <- lm(Responsibility_Gov ~ Participation, data = mediation_subset, weights = calibWeight)
+
+ols_b <- lm(Censor_Support ~ Participation + Responsibility_Gov, data = mediation_subset, weights = calibWeight)
+
+mediation_result <- mediate(ols_a, ols_b, treat = "Participation", mediator = "Responsibility_Gov")
+
+summary(mediation_result)
+
+```
+
+ACME = -0.00630698, *p* = 0.04 - Significant
+
+A significant ACME shows that the indirect effect (*axb*) is statistically different from zero, validating the author's claim that "perceived government responsibility has a significant and negative causal mediation effect". 
+
+I will bootstrap CIs as a robustness check:
+
+```{r , include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+mediation_result_stress <- mediate(ols_a, ols_b, treat = "Participation", mediator = "Responsibility_Gov", boot = TRUE, sims = 5000)
+
+summary(mediation_result_stress)
+
+```
+
+
+ACME = -0.0061726, *p* = 0.2856 - Not significant
+
+The re-estimated ACME remains negative, but we no longer have evidence that *axb* is statistically distinguishable from zero. The causal mediation effect is no longer significant. 
+
+Under the author's original specification assuming normal *axb* sampling distribution by the mediation package default (Quasi-Bayesian CIs) the effect was found to be marginally significant; After bootstrapping, CIs widened and now included zero (-0.0191, 0.0058). This is a signal that the sampling distribution of indirect effects was *not* normal, Bootstrap captured its true distributional shape upon drawing 5000 simulated resamples - generating stricter, more accurate CIs that swallowed the zero. 
+While the mediation stands, the effect was not robust to the customary, more rigorous bootstrapping approach - even a marginally significant effect (-0.014, -0.0003, *P* = 0.04) relied on distributional assumptions that were inappropriate for the sample. I can only safely conclude that the government responsibility mediation effect on the relationship between participation and support for censorship is fragile and **sensitive to / dependent on CI method**. 
+
+
+
+## Conclusion
+
+
+Regressing Censor_Support on Participation controlling for the demographic and predisposition covariates returned a significant positive coefficient (**B = 0.084, p = 0.0028, Adjusted R^2 = 0.106**), showing the positive association between additional levels of public participation and unit increase in support for censorship hypothesized by the author. 
+
+Sensitivity analysis using Econ_Ideology as the benchmark covariate confirmed that the significant result was largely robust to OVB (**RV = 0.0879**) under a realistic hypothetical confounding scenario, while stress testing revealed that the significance will be overturned by unobserved confounders 3x as strong as Econ_Ideology (**Adjusted CI = [-0.0056, 0.0977]**).
+
+No independent variables are found to be multicollinear (**All VIFs < 1.5**).
+
+The model passed Ramsey's error specification test (**RESET p = 0.106**), confirming that the linearity assumption was not violated; The curved loess line observed in the fitted-values/residuals scatter plot was ascribed to data sparsity at the extremes, and gaps created by the *discrete* nature of our ordinal/binary variables. 
+
+A density plot with normal curve for comparison revealed that the residual distribution was bimodal - with residuals clustered at two peaks, while the quantile-quantile plot showed sizable tails creating a visible S-shape indicative of leptokurtosis, although I avoided declaring this as a *statistical* non-normal error due to the examinations being purely ocular. 
+
+There was no statistical evidence that the model violated the constant variance assumption (**Breusch-Pagan Chisq = 1.057, p = 0.304**), and the spread level plot trend-lines showed no severe, systematic heteroscedastic pattern; However the funnel shape - collectively with the speculated abnormalities - showed a notable variance problem which I attempted to salvage using type 3 heteroscedasticity-consistent standard errors. Upon introducing HC3s, however, the significance of our estimated coefficient was killed (**p = 0.0729**), revealing the main model to be very sensitive to standard error type.
+
+Large dfbetas exceeding the recommended threshold were located and flagged (**max: case950 -0.676**); although the estimated Participation coefficient changed only marginally once they were removed (**B = 0.0855**). Similarly an influence plot revealed large hat-values stretching the scale (**max: case994 0.126**) and huge studentised residuals (**case404 5.522, case494 4.071, case507 4.902, case1097 4.785**), despite the estimated coefficient decreasing only by a margin after the influential observations were omitted (**B = 0.0794**). This sign of remarkable robustness was ascribed to the use of calibration weights, which diluted the influence of over-sampled observations with high raw leverage. Upon closer examination of the survey re-weighting and replicating table B1, it was confirmed that the post-stratified sample distribution largely met the calibration benchmarks taken from the China internet census as the author intended.
+
+As part of an extended exploratory analysis I found a significant positive age moderation (**B = 0.0706, p = 0.0170**), indicating that the effect of Participation in the censorship process on support was greater among older respondents compared to younger ones - a pattern left to the exploration of future research. Whilst the positive association remained under the use of HC3s, significance was similarly killed, showing that the moderated model too was fragile.
+
+Regressing the selected mediator Responsibility_Gov on Participation controlling for all demographic and predisposition covariates first returned a significant negative association between higher levels of censorship participation and perceived government responsibility for censorship (**B = -0.112, p = 0.0225**). 
+Conducting causal mediation analysis using the author's original specification (Quasi-Bayesian, assumed normal sample distribution by the mediation package default) returned a significant negative indirect effect (**ACME = -0.00631, p = 0.040, CI = [-0.014, -0.0003]**), while adopting a more rigorous approach providing wider, more precise confidence intervals (Nonparametric Bootstrap, no distributional assumptions, CIs derived from 5000 simulations) revealed that the re-estimated indirect effect was no longer significant (**ACME = -0.00617, p = 0.286, CI = [-0.0191, 0.0058]**), showing that the mediation effect was not robust to CI method - its significance wholly depending on an imprecise distributional assumption. 
+
+Overall our replicated analysis confirm the author's crucial findings and show that the main OLS regression was **robust**.
+
+
+
+## Session Information
+
+See the versions I used for the relevant packages:
+
+```{r versions, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
+
+sessionInfo()
+
+```
+
+
+
