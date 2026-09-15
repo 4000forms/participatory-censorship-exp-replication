@@ -1,5 +1,5 @@
 ---
-title: "Replicating and reviewing the observantional design in Participatory Censorship in Authoritarian Regimes by Tony Yang"
+title: "Replicating and reviewing Participatory Censorship in Authoritarian Regimes experiment 1 by Tony Yang"
 author: "Carmen Wu"
 date: "2026-09-04"
 output:
@@ -247,7 +247,7 @@ Each additional level of **participation in censorship** is associated with a 0.
 
 //
 
-The author noted that the observational analyses above are "susceptible to the possibility of omitted variable bias or reverse causality" given the small coefficient (*B* = 0.084), so we will follow in the author's exact footsteps and conduct sensitivity analysis on the main model as a primary robustness check - against an unobserved confounding variable "as strong as the most significant observed covariate" **Econ_Ideology** (*B* = 0.202, *p* = 4.47e-11). 
+The author noted that the analyses above are "susceptible to the possibility of omitted variable bias or reverse causality" given the small coefficient (*B* = 0.084), so we will follow in the author's exact footsteps and conduct sensitivity analysis on the main model as a primary robustness check - against an unobserved confounding variable "as strong as the most significant observed covariate" **Econ_Ideology** (*B* = 0.202, *p* = 4.47e-11). 
 I cannot help but notice that the author's script set the kD argument to 1:3, which means they also tested the results against unobserved confounding variables 2x and 3x stronger than the selected covariate. I will do the same:
 
 ```{r sensitivity test, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
@@ -607,7 +607,7 @@ rownames(table) <- c("[Gender]: F", "[Gender]: M", "[Location]: Rural", "[Locati
 table
 
 ```
-The sample distribution now meets the calibration targets of the Chinese internet census after weighting just as the author stated. Weights dilute the influence of high leverage observations had they been over-sampled (enough to lever the estimated coefficient), which explains why the model was robust to their inclusion. The author's choice post-stratification weighting is thereby fully justified.
+The sample distribution now meets the calibration targets of the Chinese internet census after weighting just as the author stated. Weights dilute the influence of high leverage observations had they been over-sampled (enough to lever the estimated coefficient), which explains why the model was robust to their inclusion. The author's choice in post-stratification weighting is thereby fully justified.
 
 
 
