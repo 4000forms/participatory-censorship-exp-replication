@@ -42,15 +42,8 @@ library(stargazer)
 
 ## Setup
 
-```{r add, include=FALSE}
-
-
-
-```
-
 ```{r create copy, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
 
-setwd("/Users/hedwig/Desktop/Participatory Censorship Experiment Replication")
 study1 <- read.csv("Data/Study1.csv")
 study1_mine <- study1
 
@@ -346,8 +339,6 @@ fit.p <- study1_mine_fix$fit.p
 
 ggplot(study1_mine_fix, aes(fit.p, y = fit.r)) + geom_point(shape = 1) + geom_hline(yintercept = 0) + geom_smooth(method = "loess", color = "dodgerblue")
 
-ggsave("/Users/hedwig/Desktop/Participatory Censorship Experiment Replication/Plots/fittedvals_res.png", width = 6, height = 4)
-
 ```
 
 Due to the predictors being a mix of ordinal and binary variables, the residuals are expected to fall into the diagonal bands presented in the visualisation above. The tails of the loess line are slightly curved downwards over low and high ranges of predicted support, which may be pointing to systematic overestimation at the extremes nonetheless (or something the linear model is failing to pick up). Considering the expected behavior due to ordinal and binary predictors described just now, however, I will double-check the coefficients of 2nd and 3rd powers to our predictors using a Ramsey's RESET test before concluding non-linearity.
@@ -368,8 +359,6 @@ Indeed, we have no statistical evidence of linearity related specification error
 
 ggplot(study1_mine_fix, aes(fit.r)) + geom_density() + stat_function(fun = dnorm, args = list(mean = mean(fit.r), sd = sd(fit.r)), color = "red")
 
-ggsave("/Users/hedwig/Desktop/Participatory Censorship Experiment Replication/Plots/ND_density.png", width = 6, height = 4)
-
 ```
 
 The distribution appears bimodal with two peaks at -0.25 and 0.75 where the most residuals seem to be clustering at, however I simply cannot expect the residual distribution shape to resemble a bell curve given that the variables are all discrete. For the same reason I will skip a Shapiro-Wilk test (where the W stat is guaranteed to be highly significant given the large sample size). 
@@ -378,8 +367,6 @@ The distribution appears bimodal with two peaks at -0.25 and 0.75 where the most
 ```{r qq, include=TRUE, message=FALSE, warning=FALSE, echo=TRUE}
 
 ggplot(study1_mine_fix, aes(sample = fit.r)) + stat_qq(shape = 1) + stat_qq_line(size = 1.5, alpha = 5)
-
-ggsave("/Users/hedwig/Desktop/Participatory Censorship Experiment Replication/Plots/ND_qq.png", width = 6, height = 4)
 
 ```
 
