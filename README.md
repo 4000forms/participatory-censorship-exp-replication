@@ -7,7 +7,7 @@
 
 - ‘Markdown.Rmd’ - Full markdown of my replication process with a summary of the authors’ findings and measurement, replicating OLS regressions, diagnosing the main model, and evaluating robustness while extending their analysis. 
 - ‘Markdown.html’ - Knitted html file. *Recommend download directly*.
-- ‘Data/’ - Folder containing plots created.
+- ‘Plots/’ - Folder containing plots created.
 - ‘README.md’ - This README summary. See more in Markdown.
 - ‘01_Main_Manuscript.R’ - The authors’ original code script for the main analysis.
 - ‘02_Online_Appendix.R’ - The authors’ original code script for the appendix.
@@ -15,7 +15,7 @@
 ## Brief outline
 
 The author seeks to investigate the prevalence of public participation in the censorship process in determining levels of popular support for the censorship apparatus in authoritarian regimes using an original survey, hypothesising that ordinary users who frequently report and flag political and non-political online content they disapprove of are likely to have higher levels of support for government censorship.
-I will be replicating the key findings and performing diagnostics. See more in Markdown.
+I will be replicating the key findings and performing diagnostics.
 
 - Setup and introduction
 - Summarising the study and main findings
@@ -29,7 +29,7 @@ I will be replicating the key findings and performing diagnostics. See more in M
 - Conclusion on overall robustness
 - Session information and package versions
 
-## Conclusion section
+## Conclusion section, see details in Markdown.
 
 Regressing Censor_Support on Participation controlling for the demographic and predisposition covariates returned a significant positive coefficient (**B = 0.084, p = 0.0028, Adjusted R^2 = 0.106**), showing the positive association between additional levels of public participation and unit increase in support for censorship hypothesized by the author. 
 
